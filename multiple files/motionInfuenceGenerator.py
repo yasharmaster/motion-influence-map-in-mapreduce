@@ -98,13 +98,6 @@ def getMotionInfuenceMap(vid):
         prvs = next
         opFlowOfBlocks,noOfRowInBlock,noOfColInBlock,blockSize,centreOfBlocks,xBlockSize,yBlockSize = roi.calcOptFlowOfBlocks(mag,ang,next)
         
-        # np.savetxt('output_opFlowOfBlocks.txt', opFlowOfBlocks)
-        with file('output_opFlowOfBlocks.txt', 'w') as outfile:
-            for slice_2d in opFlowOfBlocks:
-                np.savetxt(outfile, slice_2d)
-
-        sys.exit()
-
         motionInfVal = motionInMapGenerator(opFlowOfBlocks,blockSize,centreOfBlocks,xBlockSize,yBlockSize)
         motionInfOfFrames.append(motionInfVal)
         

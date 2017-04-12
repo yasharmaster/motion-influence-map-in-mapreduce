@@ -12,9 +12,6 @@ def calcOptFlowOfBlocks(mag,angle,grayImg):
     # ANGLE = open("ang.txt", 'w')
     # GRAY = open("grayImg.txt", 'w')
     
-    spark_code.mapreduce_to_file(mag)
-
-    sys.exit()
     # np.savetxt('input_mag.txt', m)
     # np.savetxt('input_angle.txt', a)
 
@@ -29,15 +26,26 @@ def calcOptFlowOfBlocks(mag,angle,grayImg):
 
     '''declare an array initialized to 0 of the size of the number of blocks'''
 
-    opFlowOfBlocks = np.zeros((xBlockSize,yBlockSize,2))
-    for index,value in np.ndenumerate(mag):
-        opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][0] += mag[index[0]][index[1]]
-        opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][1] += angle[index[0]][index[1]]
-    
-    
+    # opFlowOfBlocks = np.zeros((xBlockSize,yBlockSize,2))
+
+    # Sum all the mag & angle values in each block
+    # for index,value in np.ndenumerate(mag):
+    #     opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][0] += mag[index[0]][index[1]]
+    #     opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][1] += angle[index[0]][index[1]]
+
+    # Output averages to a file for testing
+    # thefile = open('nospark mag averages.txt', 'w')
+    # for i in range(xBlockSize):
+    # 	for j in opFlowOfBlocks[i]:
+    # 		thefile.write("%s\n" % str(j[0]/400.0))
+    # thefile.close()
+
+    opFlowOfBlocks = spark_code.mapreduce_to_file(mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
+    # sys.exit()
+
     centreOfBlocks = np.zeros((xBlockSize,yBlockSize,2))
     for index,value in np.ndenumerate(opFlowOfBlocks):
-        opFlowOfBlocks[index[0]][index[1]][index[2]] = float(value)/(noOfRowInBlock*noOfColInBlock)
+        # opFlowOfBlocks[index[0]][index[1]][index[2]] = float(value)/(noOfRowInBlock*noOfColInBlock)
         val = opFlowOfBlocks[index[0]][index[1]][index[2]]
 
         if(index[2] == 1):
@@ -63,6 +71,5 @@ def calcOptFlowOfBlocks(mag,angle,grayImg):
             y = ((index[1] + 1)*noOfColInBlock)-(noOfColInBlock/2)
             centreOfBlocks[index[0]][index[1]][0] = x
             centreOfBlocks[index[0]][index[1]][1] = y
-
 
     return opFlowOfBlocks,noOfRowInBlock,noOfColInBlock,noOfRowInBlock*noOfColInBlock,centreOfBlocks,xBlockSize,yBlockSize

@@ -13,35 +13,75 @@ def blockshaped(arr, nrows, ncols):
                .swapaxes(1,2)
                .reshape(-1, nrows, ncols))
 
+R = 0
+C = 0
+
 def mapper(input):
     sum = 0
     for row in range(len(input)):
         for col in range(len(input[0])):
             sum += input[row][col]
-    sum /= 400
+    sum /= 400.0
     return sum
 
-def mapreduce_to_file(mag):
+def mapreduce_to_file(mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize):
 
     sc = SparkContext("local", "Simple App")
     # convert array to numpy array
     mag = np.asarray(mag)
-    
-    # divide array in blocks
+    angle = np.asarray(angle)
+
+    # divide array into blocks
     mag = blockshaped(mag, 20, 20)
+    angle = blockshaped(angle, 20, 20)
 
-    rdd = sc.parallelize(mag)
+    # Parallelize numpy array of blocks
+    mag_rdd = sc.parallelize(mag)
+    angle_rdd = sc.parallelize(angle)
 
-    blocks = rdd.map(mapper)
+    R = noOfRowInBlock
+    C = noOfColInBlock
 
-    thefile = open('mag averages.txt', 'w')
+    # Execute mapper function (compute averages) on RDDs
+    mag_blocks = mag_rdd.map(mapper)
+    angle_blocks = angle_rdd.map(mapper)
 
-    for item in blocks.collect():
-        thefile.write("%s\n" % item)
-    
-    thefile.close()
+    # print average magnitudes and angles in a file for testing
+    # thefile = open('spark mag averages.txt', 'w')
+    # for item in mag_blocks.collect():
+    #     thefile.write("%s\n" % item)
+    # thefile.close()
+
+    opFlowOfBlocks = np.zeros((xBlockSize, yBlockSize, 2))
+
+    # thefile = open('spark mag averages.txt', 'w')
+    # for item in mag_blocks.toLocalIterator():
+    #     thefile.write("%s\n" % item)
+    # thefile.close()
+
+
+    i = 0
+    j = 0
+    for x in mag_blocks.toLocalIterator():
+        opFlowOfBlocks[i][j][0] = x
+        j = j + 1
+        if j >= yBlockSize:
+            j = 0
+            i = i + 1
+
+    i = 0
+    j = 0
+    for x in angle_blocks.toLocalIterator():
+        opFlowOfBlocks[i][j][1] = x
+        j = j + 1
+        if j >= yBlockSize:
+            j = 0
+            i = i + 1
+
+    # Stop the Spark Context
     sc.stop()
 
+    return opFlowOfBlocks
     # # print first 20*20 before dividing in blocks
     # thefile = open('mag without blocks.txt', 'w')
     # sum = 0
