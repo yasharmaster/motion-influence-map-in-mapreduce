@@ -28,7 +28,7 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
 
     cv2.namedWindow('Unusual Frame',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Unusual Frame',window_width, window_height)
-    while 1:
+    while (ret == True):
         print(count)
         ret, uFrame = cap.read()
         '''
@@ -39,25 +39,25 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
         
         elif((count-475) in unusualFrames):
         '''
+			
+		
         if(count in unusualFrames):
-            if (ret == False):
-                break
-            for blockNum in unusual[count]:
-                print(blockNum)
-                x1 = blockNum[1] * rowLength
-                y1 = blockNum[0] * colLength
-                x2 = (blockNum[1]+1) * rowLength
-                y2 = (blockNum[0]+1) * colLength
-                cv2.rectangle(uFrame,(x1,y1),(x2,y2),(0,0,255),1)
-            print("Unusual frame number ",str(count))
-        cv2.imshow('Unusual Frame',uFrame)
-            
-        cv2.waitKey(0)
-            #cv2.destroyAllWindows()
+			for blockNum in unusual[count]:
+				print(blockNum)
+				x1 = blockNum[1] * rowLength
+				y1 = blockNum[0] * colLength
+				x2 = (blockNum[1]+1) * rowLength
+				y2 = (blockNum[0]+1) * colLength
+				cv2.rectangle(uFrame,(x1,y1),(x2,y2),(0,0,255),1)
+			cv2.imshow('Unusual Frame',uFrame)
+			cv2.waitKey(0)
+			cv2.destroyAllWindows()
         '''
+        #  print("Unusual frame number ",str(count))
         if(count == 622):
             break
         '''
+			
         count += 1
 def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid):
     #threshold = 2.1874939946e-21
@@ -124,9 +124,9 @@ def test_video(vid):
     megaBlockMotInfVal = cmb.createMegaBlocks(MotionInfOfFrames, rows, cols)
     ######rows, cols = np.load("rows_cols__set3_p2_test_40_k3.npy")
     #print(megaBlockMotInfVal)
-    np.save("/home/yash/work/project/code/MB_test_1.npy",megaBlockMotInfVal)
+    np.save("/home/yash/work/project/unusual/code/videos/scene1/megaBlockMotInfVal_set1_p1_test_20-20_k5.npy",megaBlockMotInfVal)
     ######megaBlockMotInfVal = np.load("megaBlockMotInfVal_set3_p2_train_40_k7.npy")
-    codewords = np.load("/home/yash/work/project/code/CB_1.npy")
+    codewords = np.load("/home/yash/work/project/unusual/code/videos/scene1/codewords_set2_p1_train_20-20_k5.npy")
     print("codewords",codewords)
     listOfUnusualFrames = constructMinDistMatrix(megaBlockMotInfVal,codewords,rows, cols, vid)
     return
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     '''
         defines training set and calls trainFromVideo for every vid
     '''
-    testSet = [r"/home/yash/work/project/unusual/code/videos/scene1/test1.avi"]
+    testSet = [r"/home/yash/work/project/unusual/code/videos/scene2/2_test2.avi"]
     for video in testSet:
         test_video(video)
     print "Done"
