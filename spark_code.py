@@ -31,6 +31,22 @@ def mapreduce_to_file(mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yB
     mag = np.asarray(mag)
     angle = np.asarray(angle)
 
+    mag_values = np.zeros(320*240)
+    i = 0
+    # generate key values 
+    for index,value in np.ndenumerate(mag):
+    	row = index[0]/noOfRowInBlock
+    	col = index[1]/noOfColInBlock
+    	tup = (row, col, value)
+    	mag_values[i] = tup
+    	i = i + 1
+
+    thefile = open('spark mag averages.txt', 'w')
+    for item in mag_values:
+        thefile.write("%s\n" % item)
+    thefile.close()
+    sys.exit()
+
     # divide array into blocks
     mag = blockshaped(mag, 20, 20)
     angle = blockshaped(angle, 20, 20)

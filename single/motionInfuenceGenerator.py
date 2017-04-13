@@ -2,8 +2,6 @@ import cv2
 import numpy as np
 import opFlowOfBlocks as roi
 import math
-import sys
-
 
 def getThresholdDistance(mag,blockSize):
     return mag*blockSize
@@ -20,10 +18,11 @@ def getCentreOfBlock(blck1Indx,blck2Indx,centreOfBlocks):
     slope = float(y2-y1)/(x2-x1) if (x1 != x2) else float("inf")
     return (x1,y1),(x2,y2),slope
 
+
 def calcEuclideanDist((x1,y1),(x2,y2)):
     dist = float(((x2-x1)**2 + (y2-y1)**2)**0.5)
     return dist
-
+    
 def angleBtw2Blocks(ang1,ang2):
     if(ang1-ang2 < 0):
         ang1InDeg = math.degrees(ang1)
@@ -53,6 +52,7 @@ def motionInMapGenerator(opFlowOfBlocks,blockSize,centreOfBlocks,xBlockSize,yBlo
     #print("Frame number ", frameNo)
     frameNo += 1
     return motionInfVal
+
 
 def getMotionInfuenceMap(vid):
     global frameNo
@@ -94,10 +94,8 @@ def getMotionInfuenceMap(vid):
         mag, ang = cv2.cartToPolar(flow[...,0], flow[...,1])
         
         
-
         prvs = next
         opFlowOfBlocks,noOfRowInBlock,noOfColInBlock,blockSize,centreOfBlocks,xBlockSize,yBlockSize = roi.calcOptFlowOfBlocks(mag,ang,next)
-        
         motionInfVal = motionInMapGenerator(opFlowOfBlocks,blockSize,centreOfBlocks,xBlockSize,yBlockSize)
         motionInfOfFrames.append(motionInfVal)
         
