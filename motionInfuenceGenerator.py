@@ -54,7 +54,7 @@ def motionInMapGenerator(opFlowOfBlocks,blockSize,centreOfBlocks,xBlockSize,yBlo
     frameNo += 1
     return motionInfVal
 
-def getMotionInfuenceMap(vid):
+def getMotionInfuenceMap(vid, sc):
     global frameNo
     
     frameNo = 0
@@ -96,7 +96,7 @@ def getMotionInfuenceMap(vid):
         
 
         prvs = next
-        opFlowOfBlocks,noOfRowInBlock,noOfColInBlock,blockSize,centreOfBlocks,xBlockSize,yBlockSize = roi.calcOptFlowOfBlocks(mag,ang,next)
+        opFlowOfBlocks,noOfRowInBlock,noOfColInBlock,blockSize,centreOfBlocks,xBlockSize,yBlockSize = roi.calcOptFlowOfBlocks(sc,mag,ang,next)
         
         motionInfVal = motionInMapGenerator(opFlowOfBlocks,blockSize,centreOfBlocks,xBlockSize,yBlockSize)
         motionInfOfFrames.append(motionInfVal)

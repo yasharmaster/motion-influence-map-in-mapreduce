@@ -1,18 +1,18 @@
 import numpy as np
 import motionInfuenceGenerator as mig
 import createMegaBlocks as cmb
-
+from pyspark import SparkContext
 
 def reject_outliers(data, m=2):
     return data[abs(data - np.mean(data)) < m * np.std(data)]
 
-def train_from_video(vid):
+def train_from_video(vid, sc):
     '''
         calls all methods to train from the given video
         May return codewords or store them.
     '''
     print "Training From ", vid
-    MotionInfOfFrames, rows, cols = mig.getMotionInfuenceMap(vid)
+    MotionInfOfFrames, rows, cols = mig.getMotionInfuenceMap(vid, sc)
     print "Motion Inf Map", len(MotionInfOfFrames)
     #numpy.save("MotionInfluenceMaps", np.array(MotionInfOfFrames), allow_pickle=True, fix_imports=True)
     megaBlockMotInfVal = cmb.createMegaBlocks(MotionInfOfFrames, rows, cols)
@@ -31,6 +31,8 @@ if __name__ == '__main__':
     '''
 
     trainingSet = [r"/home/yash/work/project/unusual/code/videos/scene1/train1.avi"]
+    sc = SparkContext("local", "Simple App")
     for video in trainingSet:
-        train_from_video(video)
+        train_from_video(video, sc)
+    sc.stop()
     print "Done"

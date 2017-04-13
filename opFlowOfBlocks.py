@@ -4,7 +4,7 @@ import math
 import sys
 import spark_code
 
-def calcOptFlowOfBlocks(mag,angle,grayImg):
+def calcOptFlowOfBlocks(sc,mag,angle,grayImg):
     '''Takes an image (gray scale) and a flow matrix as input. Divides image into blocks and calculates Optical Flow of each block '''
     '''calculate number of rows and columns in the matrix of the image'''
 
@@ -40,7 +40,7 @@ def calcOptFlowOfBlocks(mag,angle,grayImg):
     # 		thefile.write("%s\n" % str(j[0]/400.0))
     # thefile.close()
 
-    opFlowOfBlocks = spark_code.mapreduce_to_file(mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
+    opFlowOfBlocks = spark_code.mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
     # sys.exit()
 
     centreOfBlocks = np.zeros((xBlockSize,yBlockSize,2))

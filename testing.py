@@ -1,4 +1,5 @@
 import motionInfuenceGenerator as mig
+from pyspark import SparkContext
 import createMegaBlocks as cmb
 import numpy as np
 import cv2
@@ -7,8 +8,9 @@ def square(a):
 
 def diff(l):
     return (l[0] - l[1])
+
 def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
-   
+
     unusualFrames = unusual.keys()
     unusualFrames.sort()
     print(unusualFrames)
@@ -28,7 +30,7 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
 
     cv2.namedWindow('Unusual Frame',cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Unusual Frame',window_width, window_height)
-    while 1:
+    while (ret == True):
         print(count)
         ret, uFrame = cap.read()
         '''
@@ -39,25 +41,25 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
         
         elif((count-475) in unusualFrames):
         '''
+			
+		
         if(count in unusualFrames):
-            if (ret == False):
-                break
-            for blockNum in unusual[count]:
-                print(blockNum)
-                x1 = blockNum[1] * rowLength
-                y1 = blockNum[0] * colLength
-                x2 = (blockNum[1]+1) * rowLength
-                y2 = (blockNum[0]+1) * colLength
-                cv2.rectangle(uFrame,(x1,y1),(x2,y2),(0,0,255),1)
-            print("Unusual frame number ",str(count))
-        cv2.imshow('Unusual Frame',uFrame)
-            
-        cv2.waitKey(0)
-            #cv2.destroyAllWindows()
+			for blockNum in unusual[count]:
+				print(blockNum)
+				x1 = blockNum[1] * rowLength
+				y1 = blockNum[0] * colLength
+				x2 = (blockNum[1]+1) * rowLength
+				y2 = (blockNum[0]+1) * colLength
+				cv2.rectangle(uFrame,(x1,y1),(x2,y2),(0,0,255),1)
+			cv2.imshow('Unusual Frame',uFrame)
+			cv2.waitKey(0)
+			cv2.destroyAllWindows()
         '''
+        #  print("Unusual frame number ",str(count))
         if(count == 622):
             break
         '''
+			
         count += 1
 def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid):
     #threshold = 2.1874939946e-21
@@ -108,16 +110,16 @@ def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid
                 #print("MotInfVal_train",val)
                 if(val > threshold):
                         unusual[i].append((index[0],index[1]))
-    print(unusual)
+    # print(unusual)
     showUnusualActivities(unusual, vid, noOfRows, noOfCols, n)
     
-def test_video(vid):
+def test_video(vid, sc):
     '''
         calls all methods to test the given video
        
     '''
-    print "Test video ", vid
-    MotionInfOfFrames, rows, cols = mig.getMotionInfuenceMap(vid)
+    # print "Test video ", vid
+    MotionInfOfFrames, rows, cols = mig.getMotionInfuenceMap(vid, sc)
     #np.save("videos\scene1\rows_cols_set1_p1_test_20-20_k5.npy",np.array([rows,cols]))
     #######print "Motion Inf Map ", len(MotionInfOfFrames)
     #numpy.save("MotionInfluenceMaps", np.array(MotionInfOfFrames), allow_pickle=True, fix_imports=True)
@@ -126,8 +128,8 @@ def test_video(vid):
     #print(megaBlockMotInfVal)
     np.save("/home/yash/work/project/unusual/code/videos/scene1/megaBlockMotInfVal_set1_p1_test_20-20_k5.npy",megaBlockMotInfVal)
     ######megaBlockMotInfVal = np.load("megaBlockMotInfVal_set3_p2_train_40_k7.npy")
-    codewords = np.load("/home/yash/work/project/unusual/code/videos/scene1/codewords_set2_p1_train_20-20_k5.npy")
-    print("codewords",codewords)
+    codewords = np.load("/home/yash/work/project/unusual/code/videos/scene1/codewords_set1_p1_train_40-40_k5.npy")
+	# print("codewords",codewords)
     listOfUnusualFrames = constructMinDistMatrix(megaBlockMotInfVal,codewords,rows, cols, vid)
     return
     
@@ -135,7 +137,9 @@ if __name__ == '__main__':
     '''
         defines training set and calls trainFromVideo for every vid
     '''
-    testSet = [r"/home/yash/work/project/unusual/code/videos/scene2/2_test2.avi"]
+    testSet = [r"/home/yash/work/project/unusual/code/videos/scene1/test1.avi"]
+    sc = SparkContext("local", "Simple App")
     for video in testSet:
-        test_video(video)
+        test_video(video, sc)
+    sc.stop()
     print "Done"
