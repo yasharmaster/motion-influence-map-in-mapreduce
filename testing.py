@@ -3,6 +3,7 @@ from pyspark import SparkContext
 import createMegaBlocks as cmb
 import numpy as np
 import cv2
+
 def square(a):
     return (a**2)
 
@@ -126,9 +127,9 @@ def test_video(vid, sc):
     megaBlockMotInfVal = cmb.createMegaBlocks(MotionInfOfFrames, rows, cols)
     ######rows, cols = np.load("rows_cols__set3_p2_test_40_k3.npy")
     #print(megaBlockMotInfVal)
-    np.save("/home/yash/work/project/unusual/code/videos/scene1/megaBlockMotInfVal_set1_p1_test_20-20_k5.npy",megaBlockMotInfVal)
+    # np.save("/home/yash/work/project/unusual/code/videos/scene1/megaBlockMotInfVal_set1_p1_test_20-20_k5.npy",megaBlockMotInfVal)
     ######megaBlockMotInfVal = np.load("megaBlockMotInfVal_set3_p2_train_40_k7.npy")
-    codewords = np.load("/home/yash/work/project/unusual/code/videos/scene1/codewords_set1_p1_train_40-40_k5.npy")
+    codewords = np.load("/home/yash/work/project/unusual/code/codewords_set2_p1_train_20-20_k5.npy")
 	# print("codewords",codewords)
     listOfUnusualFrames = constructMinDistMatrix(megaBlockMotInfVal,codewords,rows, cols, vid)
     return
@@ -137,8 +138,9 @@ if __name__ == '__main__':
     '''
         defines training set and calls trainFromVideo for every vid
     '''
-    testSet = [r"/home/yash/work/project/unusual/code/videos/scene1/test1.avi"]
-    sc = SparkContext("local", "Simple App")
+
+    testSet = [r"/home/yash/work/project/unusual/code/videos/scene2/2_test2.avi"]
+    sc = SparkContext("local", "MotionInfluenceMap")
     for video in testSet:
         test_video(video, sc)
     sc.stop()
