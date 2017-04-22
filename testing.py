@@ -62,31 +62,12 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
         '''
 			
         count += 1
+
+
 def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid):
-    #threshold = 2.1874939946e-21
-    #threshold = 0.00196777849633
-    #threshold = 9.3985643749758953e-06
-    #threshold = 0.439167467697
-    #threshold = 0.021305195096797892
-    #threshold = 3.35845489394e-07
-    #threshold = 1.6586380629e-08
-    #threshold = 0.000212282134156
-    #threshold = 4.63266766923e-14
-    #threshold = 7.29868038369e-06
-    #threshold = 8.82926005091e-05
-    #threshold = 7.39718222289e-14
-    #threshold = 8.82926005091e-05
-    #threshold = 0.0080168593265873295
-    #threshold = 0.00511863986892
-    #------------------------------------#
+
     threshold = 5.83682407063e-05
-    #threshold = 3.37029584538e-07
-    #------------------------------------#
-    #threshold = 2.63426664698e-06
-    #threshold = 1.91130257263e-08
-    
-    #threshold = 0.0012675861679
-    #threshold = 1.01827939172e-05
+
     n = 2
     minDistMatrix = np.zeros((len(megaBlockMotInfVal[0][0]),(noOfRows/n),(noOfCols/n)))
     for index,val in np.ndenumerate(megaBlockMotInfVal[...,0]):
@@ -111,25 +92,19 @@ def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid
                 #print("MotInfVal_train",val)
                 if(val > threshold):
                         unusual[i].append((index[0],index[1]))
-    # print(unusual)
-    showUnusualActivities(unusual, vid, noOfRows, noOfCols, n)
     
+    showUnusualActivities(unusual, vid, noOfRows, noOfCols, n)
+
+
 def test_video(vid, sc):
     '''
         calls all methods to test the given video
-       
+        
     '''
-    # print "Test video ", vid
     MotionInfOfFrames, rows, cols = mig.getMotionInfuenceMap(vid, sc)
-    #np.save("videos\scene1\rows_cols_set1_p1_test_20-20_k5.npy",np.array([rows,cols]))
-    #######print "Motion Inf Map ", len(MotionInfOfFrames)
-    #numpy.save("MotionInfluenceMaps", np.array(MotionInfOfFrames), allow_pickle=True, fix_imports=True)
     megaBlockMotInfVal = cmb.createMegaBlocks(MotionInfOfFrames, rows, cols)
-    ######rows, cols = np.load("rows_cols__set3_p2_test_40_k3.npy")
-    #print(megaBlockMotInfVal)
-    # np.save("/home/yash/work/project/unusual/code/videos/scene1/megaBlockMotInfVal_set1_p1_test_20-20_k5.npy",megaBlockMotInfVal)
-    ######megaBlockMotInfVal = np.load("megaBlockMotInfVal_set3_p2_train_40_k7.npy")
-    codewords = np.load("/home/yash/work/project/unusual/code/codewords_set2_p1_train_20-20_k5.npy")
+
+    codewords = np.load("/home/yash/work/project/unusual/code/codewords.npy")
 	# print("codewords",codewords)
     listOfUnusualFrames = constructMinDistMatrix(megaBlockMotInfVal,codewords,rows, cols, vid)
     return
