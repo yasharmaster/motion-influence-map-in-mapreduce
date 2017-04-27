@@ -4,6 +4,7 @@ import numpy as np
 import math
 import sys
 from operator import add
+import mapreduce as mp
 
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
@@ -13,16 +14,6 @@ def blockshaped(arr, nrows, ncols):
                .swapaxes(1,2)
                .reshape(-1, nrows, ncols))
 
-R = 0
-C = 0
-
-def mapper(input):
-    sum = 0
-    for row in range(len(input)):
-        for col in range(len(input[0])):
-            sum += input[row][col]
-    sum /= 400.0
-    return sum
 
 def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize):
 
@@ -43,8 +34,8 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
     C = noOfColInBlock
 
     # Execute mapper function (compute averages) on RDDs
-    mag_blocks = mag_rdd.map(mapper)
-    angle_blocks = angle_rdd.map(mapper)
+    mag_blocks = mag_rdd.map(mp.mapper)
+    angle_blocks = angle_rdd.map(mp.mapper)
 
     # print average magnitudes and angles in a file for testing
     # thefile = open('spark mag averages.txt', 'w')
@@ -78,20 +69,16 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
             j = 0
             i = i + 1
 
-    thefile = open('opflowofblocks mag old approach.txt', 'w')
-    for A in opFlowOfBlocks:
-        for B in A:
-            thefile.write("%s\n" % B[0])
-    thefile.close()
+    # thefile = open('opflowofblocks mag old approach.txt', 'w')
+    # for A in opFlowOfBlocks:
+    #     for B in A:
+    #         thefile.write("%s\n" % B[0])
+    # thefile.close()
     
     # Stop the Spark Context
     # sc.stop()
 
     return opFlowOfBlocks
-
-
-def generate_key_value(x):
-    return (( (int(x[0]/20))*100000 + int(x[1]/20) ), x[2]/400.0)
 
 
 def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize):
@@ -128,11 +115,11 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
     # thefile.close()   
 
     rdd_mag_values = sc.parallelize(mag_values)
-    rdd_mag_values = rdd_mag_values.map(generate_key_value)
+    rdd_mag_values = rdd_mag_values.map(mp.generate_key_value)
     rdd_mag_values = rdd_mag_values.reduceByKey(add)
 
     rdd_ang_values = sc.parallelize(ang_values)
-    rdd_ang_values = rdd_ang_values.map(generate_key_value)
+    rdd_ang_values = rdd_ang_values.map(mp.generate_key_value)
     rdd_ang_values = rdd_ang_values.reduceByKey(add)
 
     #print (noOfRowInBlock)
@@ -145,15 +132,7 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
     # 	if count < 0:
     # 		break
 
-
-
     opFlowOfBlocks = np.zeros((xBlockSize, yBlockSize, 2))
-
-    """
-    TO DO - enter values from rdd_mag_values to opflowofblocks
-    and do the same for angle
-    compare values with earlier approach
-    """
 
     for item in rdd_mag_values.collect():
         key = item[0]
