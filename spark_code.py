@@ -37,19 +37,7 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
     mag_blocks = mag_rdd.map(mp.mapper)
     angle_blocks = angle_rdd.map(mp.mapper)
 
-    # print average magnitudes and angles in a file for testing
-    # thefile = open('spark mag averages.txt', 'w')
-    # for item in mag_blocks.collect():
-    #     thefile.write("%s\n" % item)
-    # thefile.close()
-
     opFlowOfBlocks = np.zeros((xBlockSize, yBlockSize, 2))
-
-    # thefile = open('spark mag averages.txt', 'w')
-    # for item in mag_blocks.toLocalIterator():
-    #     thefile.write("%s\n" % item)
-    # thefile.close()
-
 
     i = 0
     j = 0
@@ -68,12 +56,6 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
         if j >= yBlockSize:
             j = 0
             i = i + 1
-
-    # thefile = open('opflowofblocks mag old approach.txt', 'w')
-    # for A in opFlowOfBlocks:
-    #     for B in A:
-    #         thefile.write("%s\n" % B[0])
-    # thefile.close()
     
     # Stop the Spark Context
     # sc.stop()
@@ -83,7 +65,6 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
 
 def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize):
 
-    # sc = SparkContext("local", "Simple App")
     # convert array to numpy array
     mag = np.asarray(mag)
     angle = np.asarray(angle)
@@ -107,13 +88,6 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
         ang_values[i][2] = value
         i = i + 1
 
-    # thefile = open('mag values.txt', 'w')
-    # for i in mag_values:
-    #     thefile.write("%d " % i[0])
-    #     thefile.write("%d " % i[1])
-    #     thefile.write("%f \n" % i[2])
-    # thefile.close()   
-
     rdd_mag_values = sc.parallelize(mag_values)
     rdd_mag_values = rdd_mag_values.map(mp.generate_key_value)
     rdd_mag_values = rdd_mag_values.reduceByKey(add)
@@ -121,16 +95,6 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
     rdd_ang_values = sc.parallelize(ang_values)
     rdd_ang_values = rdd_ang_values.map(mp.generate_key_value)
     rdd_ang_values = rdd_ang_values.reduceByKey(add)
-
-    #print (noOfRowInBlock)
-    #print (noOfColInBlock)
-
-    # count = 100
-    # for item in rdd_mag_values.collect():
-    # 	print (item)
-    # 	count = count - 1
-    # 	if count < 0:
-    # 		break
 
     opFlowOfBlocks = np.zeros((xBlockSize, yBlockSize, 2))
 

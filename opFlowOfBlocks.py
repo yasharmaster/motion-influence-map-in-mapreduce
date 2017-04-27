@@ -8,13 +8,6 @@ def calcOptFlowOfBlocks(sc,mag,angle,grayImg):
     '''Takes an image (gray scale) and a flow matrix as input. Divides image into blocks and calculates Optical Flow of each block '''
     '''calculate number of rows and columns in the matrix of the image'''
 
-    # MAG = open("mag.txt", 'w')
-    # ANGLE = open("ang.txt", 'w')
-    # GRAY = open("grayImg.txt", 'w')
-    
-    # np.savetxt('input_mag.txt', m)
-    # np.savetxt('input_angle.txt', a)
-
     rows = grayImg.shape[0]
     cols = grayImg.shape[1]
     noOfRowInBlock = 20
@@ -23,22 +16,6 @@ def calcOptFlowOfBlocks(sc,mag,angle,grayImg):
     xBlockSize = rows / noOfRowInBlock
     yBlockSize = cols / noOfColInBlock
     '''To calculate the optical flow of each block'''
-
-    '''declare an array initialized to 0 of the size of the number of blocks'''
-
-    # opFlowOfBlocks = np.zeros((xBlockSize,yBlockSize,2))
-
-    # Sum all the mag & angle values in each block
-    # for index,value in np.ndenumerate(mag):
-    #     opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][0] += mag[index[0]][index[1]]
-    #     opFlowOfBlocks[index[0]/noOfRowInBlock][index[1]/noOfColInBlock][1] += angle[index[0]][index[1]]
-
-    # Output averages to a file for testing
-    # thefile = open('nospark mag averages.txt', 'w')
-    # for i in range(xBlockSize):
-    # 	for j in opFlowOfBlocks[i]:
-    # 		thefile.write("%s\n" % str(j[0]/400.0))
-    # thefile.close()
 
     #opFlowOfBlocks = spark_code.mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
     opFlowOfBlocks = spark_code.opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
