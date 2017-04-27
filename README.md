@@ -4,4 +4,4 @@ This is the implementation of Motion Influence Map Technique for Video Classific
 
 ## Requirements
 - OpenCV 2.4.*
-- Apache Spark 2.1.1
+- Apache Spark 2.1.0

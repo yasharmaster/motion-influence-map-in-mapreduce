@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import math
 import sys
-
+from operator import add
 
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 
@@ -78,10 +78,20 @@ def mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize
             j = 0
             i = i + 1
 
+    thefile = open('opflowofblocks mag old approach.txt', 'w')
+    for A in opFlowOfBlocks:
+        for B in A:
+            thefile.write("%s\n" % B[0])
+    thefile.close()
+    
     # Stop the Spark Context
     # sc.stop()
 
     return opFlowOfBlocks
+
+
+def generate_key_value(x):
+    return (( (int(x[0]/20))*100000 + int(x[1]/20) ), x[2]/400.0)
 
 
 def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize):
@@ -94,13 +104,21 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
     a, b = mag.shape
 
     mag_values = np.zeros((a*b,3))
+    ang_values = np.zeros((a*b,3))
 
     i = 0
     for index, value in np.ndenumerate(mag):
-    	mag_values[i][0] = index[0]
-    	mag_values[i][1] = index[1]
+    	mag_values[i][0] = int(index[0])
+    	mag_values[i][1] = int(index[1])
     	mag_values[i][2] = value
     	i = i + 1
+
+    i = 0
+    for index, value in np.ndenumerate(angle):
+        ang_values[i][0] = int(index[0])
+        ang_values[i][1] = int(index[1])
+        ang_values[i][2] = value
+        i = i + 1
 
     # thefile = open('mag values.txt', 'w')
     # for i in mag_values:
@@ -109,71 +127,54 @@ def opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize,
     #     thefile.write("%f \n" % i[2])
     # thefile.close()   
 
-    rdd_mag_values = sc.parallelize(mag_values).map(lambda x: (int(x[0]/noOfRowInBlock)*16 + int(x[1]/noOfColInBlock), x[2])).reduceByKey(add).map(lambda x: x/400)
+    rdd_mag_values = sc.parallelize(mag_values)
+    rdd_mag_values = rdd_mag_values.map(generate_key_value)
+    rdd_mag_values = rdd_mag_values.reduceByKey(add)
 
-    count = 10
-    for item in rdd_mag_values.collect():
-    	print (item)
-    	count = count - 1
-    	if count < 0:
-    		break
+    rdd_ang_values = sc.parallelize(ang_values)
+    rdd_ang_values = rdd_ang_values.map(generate_key_value)
+    rdd_ang_values = rdd_ang_values.reduceByKey(add)
 
-    # thefile = open('mag values rdd.txt', 'w')
+    #print (noOfRowInBlock)
+    #print (noOfColInBlock)
+
+    # count = 100
     # for item in rdd_mag_values.collect():
-    #     thefile.write("%s\n" % item)
-    # thefile.close()
+    # 	print (item)
+    # 	count = count - 1
+    # 	if count < 0:
+    # 		break
 
-    sc.stop()
-    sys.exit()
 
-    # divide array into blocks
-    mag = blockshaped(mag, 20, 20)
-    angle = blockshaped(angle, 20, 20)
-
-    # Parallelize numpy array of blocks
-    mag_rdd = sc.parallelize(mag)
-    angle_rdd = sc.parallelize(angle)
-
-    R = noOfRowInBlock
-    C = noOfColInBlock
-
-    # Execute mapper function (compute averages) on RDDs
-    mag_blocks = mag_rdd.map(mapper)
-    angle_blocks = angle_rdd.map(mapper)
-
-    # print average magnitudes and angles in a file for testing
-    # thefile = open('spark mag averages.txt', 'w')
-    # for item in mag_blocks.collect():
-    #     thefile.write("%s\n" % item)
-    # thefile.close()
 
     opFlowOfBlocks = np.zeros((xBlockSize, yBlockSize, 2))
 
-    # thefile = open('spark mag averages.txt', 'w')
-    # for item in mag_blocks.toLocalIterator():
-    #     thefile.write("%s\n" % item)
+    """
+    TO DO - enter values from rdd_mag_values to opflowofblocks
+    and do the same for angle
+    compare values with earlier approach
+    """
+
+    for item in rdd_mag_values.collect():
+        key = item[0]
+        val = item[1]
+        col = key%100000
+        row = key/100000
+        opFlowOfBlocks[row][col][0] = val
+
+    for item in rdd_ang_values.collect():
+        key = item[0]
+        val = item[1]
+        col = key%100000
+        row = key/100000
+        opFlowOfBlocks[row][col][1] = val
+
+    # thefile = open('opflowofblocks mag new approach.txt', 'w')
+    # for A in opFlowOfBlocks:
+    #     for B in A:
+    #         thefile.write("%s\n" % B[0])
     # thefile.close()
-
-
-    i = 0
-    j = 0
-    for x in mag_blocks.toLocalIterator():
-        opFlowOfBlocks[i][j][0] = x
-        j = j + 1
-        if j >= yBlockSize:
-            j = 0
-            i = i + 1
-
-    i = 0
-    j = 0
-    for x in angle_blocks.toLocalIterator():
-        opFlowOfBlocks[i][j][1] = x
-        j = j + 1
-        if j >= yBlockSize:
-            j = 0
-            i = i + 1
-
-    # Stop the Spark Context
     # sc.stop()
+    # sys.exit()
 
     return opFlowOfBlocks

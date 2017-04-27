@@ -40,7 +40,9 @@ def calcOptFlowOfBlocks(sc,mag,angle,grayImg):
     # 		thefile.write("%s\n" % str(j[0]/400.0))
     # thefile.close()
 
-    opFlowOfBlocks = spark_code.mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
+    #opFlowOfBlocks = spark_code.mapreduce_to_file(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
+    opFlowOfBlocks = spark_code.opflow_mapreduce(sc, mag, angle, noOfRowInBlock, noOfColInBlock, xBlockSize, yBlockSize)
+    # sc.stop()
     # sys.exit()
 
     centreOfBlocks = np.zeros((xBlockSize,yBlockSize,2))

@@ -3,6 +3,7 @@ from pyspark import SparkContext
 import createMegaBlocks as cmb
 import numpy as np
 import cv2
+import time
 
 def square(a):
     return (a**2)
@@ -20,7 +21,7 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
     rows, cols = frame.shape[0], frame.shape[1]
     rowLength = rows/(noOfRows/n)
     colLength = cols/(noOfCols/n)
-    print("Block Size ",(rowLength,colLength))
+    #print("Block Size ",(rowLength,colLength))
     count = 0
     screen_res = 980, 520
     scale_width = screen_res[0] / 320
@@ -65,9 +66,7 @@ def showUnusualActivities(unusual, vid, noOfRows, noOfCols, n):
 
 
 def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid):
-
     threshold = 5.83682407063e-05
-
     n = 2
     minDistMatrix = np.zeros((len(megaBlockMotInfVal[0][0]),(noOfRows/n),(noOfCols/n)))
     for index,val in np.ndenumerate(megaBlockMotInfVal[...,0]):
@@ -93,7 +92,7 @@ def constructMinDistMatrix(megaBlockMotInfVal,codewords, noOfRows, noOfCols, vid
                 if(val > threshold):
                         unusual[i].append((index[0],index[1]))
     
-    showUnusualActivities(unusual, vid, noOfRows, noOfCols, n)
+    #showUnusualActivities(unusual, vid, noOfRows, noOfCols, n)
 
 
 def test_video(vid, sc):
@@ -105,7 +104,7 @@ def test_video(vid, sc):
     megaBlockMotInfVal = cmb.createMegaBlocks(MotionInfOfFrames, rows, cols)
 
     codewords = np.load("/home/yash/work/project/unusual/code/codewords.npy")
-	# print("codewords",codewords)
+	#print("codewords",codewords)
     listOfUnusualFrames = constructMinDistMatrix(megaBlockMotInfVal,codewords,rows, cols, vid)
     return
     
@@ -114,9 +113,11 @@ if __name__ == '__main__':
         defines training set and calls trainFromVideo for every vid
     '''
 
-    testSet = [r"/home/yash/work/project/unusual/code/videos/scene2/2_test2.avi"]
+    testSet = [r"/home/yash/work/project/unusual/code/2_test2.avi"]
     sc = SparkContext("local", "MotionInfluenceMap")
+    start_time = time.time()
     for video in testSet:
         test_video(video, sc)
+    print("--- %s seconds ---" % (time.time() - start_time))
     sc.stop()
     print "Done"
